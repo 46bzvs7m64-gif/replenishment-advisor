@@ -1,275 +1,539 @@
 <!DOCTYPE html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><title>智能补货建议报告</title>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能补货建议报告 · SCM Intelligence</title>
 <style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:"Microsoft YaHei",sans-serif;color:#1a1a2e;background:#f4f5f9;padding:16px}
-  .container{max-width:1100px;margin:0 auto}
-  h1{font-size:20px;margin-bottom:4px}
-  .meta{font-size:12px;color:#888;margin-bottom:16px}
-  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
-  .kpi{background:#fff;border-radius:10px;padding:14px;text-align:center}
-  .kpi .label{font-size:11px;color:#888}.kpi .value{font-size:24px;font-weight:700;margin:4px 0}
-  .section{background:#fff;border-radius:10px;padding:16px;margin-bottom:16px;overflow-x:auto}
-  table{width:100%;border-collapse:collapse;font-size:12px}
-  th{text-align:left;padding:8px 6px;border-bottom:2px solid #e5e7eb;color:#6b7280;font-size:11px}
-  td{padding:7px 6px;border-bottom:1px solid #f3f4f6}
-  .footer{text-align:center;font-size:11px;color:#999;margin-top:16px}
-</style></head><body>
-<div class="container">
-  <h1>智能补货建议报告</h1>
-  <div class="meta">生成时间: 2026-10-08 22:53 | 分析 SKU 数: 30</div>
-  <div class="kpi-grid">
-    <div class="kpi"><div class="label">立即补货</div><div class="value" style="color:#dc2626">1</div><div class="label" style="color:#dc2626">≤3天覆盖</div></div>
-    <div class="kpi"><div class="label">本周补货</div><div class="value" style="color:#d97706">3</div><div class="label" style="color:#d97706">4-7天覆盖</div></div>
-    <div class="kpi"><div class="label">暂缓补货</div><div class="value" style="color:#059669">26</div><div class="label" style="color:#059669">>7天覆盖</div></div>
-    <div class="kpi"><div class="label">建议补货总量</div><div class="value">946</div><div class="label">件</div></div>
+:root{
+  --ink:#0E2138; --ink-2:#16304f; --ink-soft:#3c5168; --muted:#7c8aa0;
+  --paper:#eef1f6; --card:#ffffff; --line:#e4e8f0; --line-soft:#f0f2f7;
+  --gold:#b08d4e; --gold-2:#c7a862; --gold-deep:#8f6f36;
+  --red:#bd3b31; --red-bg:#fbecea;
+  --amber:#bd8424; --amber-bg:#faf1de;
+  --teal:#178a75; --teal-bg:#e4f3f0;
+  --gray:#8590a2; --gray-bg:#eef1f5;
+  --shadow:0 1px 2px rgba(14,33,56,.05),0 10px 30px -16px rgba(14,33,56,.18);
+  --shadow-hover:0 2px 4px rgba(14,33,56,.06),0 18px 40px -18px rgba(14,33,56,.28);
+  --num:"Segoe UI",system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;color:var(--ink);background:var(--paper);line-height:1.5;-webkit-font-smoothing:antialiased}
+.num{font-family:var(--num);font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto;padding:0 24px 8px}
+
+/* ============ 报头 ============ */
+.masthead{position:relative;background:linear-gradient(155deg,#0a1c34 0%,#143152 52%,#0e2543 100%);color:#fff;overflow:hidden}
+.masthead::before{content:"";position:absolute;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.045) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.045) 1px,transparent 1px);
+  background-size:46px 46px;mask-image:linear-gradient(180deg,#000 0%,transparent 92%)}
+.masthead::after{content:"";position:absolute;right:-120px;top:-160px;width:520px;height:520px;border-radius:50%;
+  background:radial-gradient(circle,rgba(199,168,98,.22),transparent 62%)}
+.mh-inner{position:relative;max-width:1240px;margin:0 auto;padding:26px 24px 0}
+.mh-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}
+.brand{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.32em;color:rgba(255,255,255,.72);font-weight:600}
+.brand .mark{width:26px;height:26px;border:1px solid rgba(199,168,98,.7);border-radius:6px;display:grid;place-items:center;
+  background:linear-gradient(135deg,rgba(199,168,98,.22),rgba(199,168,98,.05));color:var(--gold-2);font-size:12px;letter-spacing:0;font-family:var(--num)}
+.classify{font-size:10px;letter-spacing:.24em;color:rgba(255,255,255,.55);border:1px solid rgba(255,255,255,.18);padding:4px 12px;border-radius:20px}
+.mh-title{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.mh-title h1{font-size:34px;font-weight:700;letter-spacing:.02em;line-height:1.15}
+.mh-title .en{font-size:11px;letter-spacing:.42em;color:var(--gold-2);padding-bottom:7px;font-weight:600}
+.mh-meta{display:flex;gap:0;margin-top:26px;border-top:1px solid rgba(255,255,255,.1);flex-wrap:wrap}
+.mi{padding:14px 26px 14px 0;margin-right:26px;border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:3px}
+.mi:last-child{border-right:0}
+.mi .k{font-size:10px;letter-spacing:.2em;color:rgba(255,255,255,.5)}
+.mi .v{font-size:14px;font-weight:600}
+.mi .v small{font-size:11px;color:rgba(255,255,255,.55);font-weight:400;margin-left:3px}
+
+/* 执行摘要条 */
+.verdict{position:relative;background:linear-gradient(90deg,rgba(199,168,98,.16),rgba(199,168,98,.05) 55%,transparent);
+  border-top:1px solid rgba(199,168,98,.35);margin-top:24px;padding:15px 0;display:flex;gap:14px;align-items:center}
+.verdict .tag{flex-shrink:0;font-size:10px;letter-spacing:.28em;color:var(--gold-2);font-weight:700;border:1px solid rgba(199,168,98,.5);padding:5px 12px;border-radius:4px}
+.verdict p{font-size:13.5px;color:rgba(255,255,255,.88);max-width:980px}
+.verdict b{color:#fff}
+
+/* ============ 通用区块 ============ */
+.sec{margin-top:28px}
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.sec-head .no{font-family:var(--num);font-size:13px;font-weight:700;letter-spacing:.1em;
+  background:linear-gradient(135deg,var(--gold-2),var(--gold-deep));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sec-head h2{font-size:17px;font-weight:700}
+.sec-head .rule{flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+.sec-head .note{font-size:11px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}
+.rise{opacity:0;animation:rise .7s cubic-bezier(.22,.68,.32,1) forwards}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ============ KPI ============ */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi{position:relative;padding:20px 22px 18px;overflow:hidden;transition:transform .25s,box-shadow .25s}
+.kpi:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover)}
+.kpi::after{content:"";position:absolute;left:0;top:0;bottom:0;width:3px}
+.kpi.k-red::after{background:linear-gradient(180deg,var(--red),#8f2a22)}
+.kpi.k-amber::after{background:linear-gradient(180deg,var(--amber),#8f6218)}
+.kpi.k-teal::after{background:linear-gradient(180deg,var(--teal),#0e6353)}
+.kpi.k-gold::after{background:linear-gradient(180deg,var(--gold-2),var(--gold-deep))}
+.kpi .lab{font-size:12px;color:var(--muted);font-weight:500;display:flex;justify-content:space-between;align-items:center}
+.kpi .lab .en{font-size:9px;letter-spacing:.22em;opacity:.7}
+.kpi .val{font-size:38px;font-weight:700;margin:8px 0 2px;line-height:1.1;font-family:var(--num);letter-spacing:-.01em}
+.kpi.k-red .val{color:var(--red)}.kpi.k-amber .val{color:var(--amber)}.kpi.k-teal .val{color:var(--teal)}
+.kpi .sub{font-size:11px;color:var(--muted)}
+.kpi .sub b{font-weight:700}
+.kpi.k-red .sub b{color:var(--red)}.kpi.k-amber .sub b{color:var(--amber)}.kpi.k-teal .sub b{color:var(--teal)}
+.kpi .spark{position:absolute;right:16px;bottom:14px;opacity:.5}
+
+/* ============ 图表区 ============ */
+.ana-grid{display:grid;grid-template-columns:1fr 1.25fr 1.15fr;gap:16px}
+.ana-card{padding:20px 22px}
+.ana-card h3{font-size:13.5px;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.ana-card h3 span{font-size:10px;letter-spacing:.14em;color:var(--muted);font-weight:500}
+.donut-wrap{display:flex;align-items:center;gap:18px;margin-top:14px}
+.donut{position:relative;width:138px;height:138px;flex-shrink:0}
+.donut svg{transform:rotate(-90deg)}
+.donut .dc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut .dc b{font-size:30px;font-family:var(--num);line-height:1}
+.donut .dc small{font-size:10px;color:var(--muted);letter-spacing:.14em;margin-top:4px}
+.legend{display:flex;flex-direction:column;gap:9px;flex:1}
+.lg{display:flex;align-items:center;gap:8px;font-size:12px}
+.lg i{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.lg .n{margin-left:auto;font-family:var(--num);font-weight:700;font-size:13px}
+.lg .p{color:var(--muted);font-size:11px;font-family:var(--num);width:38px;text-align:right}
+
+.hbars{margin-top:16px;display:flex;flex-direction:column;gap:13px}
+.hb .top{display:flex;font-size:11.5px;margin-bottom:5px}
+.hb .top .t{color:var(--ink-soft);font-weight:600}
+.hb .top .c{margin-left:auto;color:var(--muted);font-family:var(--num)}
+.hb .top .c b{color:var(--ink);font-size:12.5px}
+.hb .track{height:8px;background:var(--gray-bg);border-radius:4px;overflow:hidden}
+.hb .fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.22,.68,.32,1)}
+
+/* ============ 行动计划 ============ */
+.action-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.act{padding:0;overflow:hidden;display:flex;flex-direction:column;transition:transform .25s,box-shadow .25s}
+.act:hover{transform:translateY(-3px);box-shadow:var(--shadow-hover)}
+.act .rib{padding:9px 18px;font-size:11px;font-weight:700;letter-spacing:.06em;display:flex;align-items:center;gap:7px}
+.act.a-now .rib{background:var(--red-bg);color:var(--red)}
+.act.a-week .rib{background:var(--amber-bg);color:var(--amber)}
+.act .rib .dot{width:7px;height:7px;border-radius:50%;background:currentColor}
+.act .body{padding:16px 18px 18px;flex:1;display:flex;flex-direction:column}
+.act .sku{font-size:10px;letter-spacing:.12em;color:var(--muted);font-family:var(--num)}
+.act .nm{font-size:15px;font-weight:700;margin:3px 0 12px}
+.act .qty{font-size:26px;font-weight:700;font-family:var(--num);color:var(--ink)}
+.act .qty small{font-size:11px;color:var(--muted);font-weight:400;font-family:inherit;margin-left:4px}
+.act dl{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:7px;font-size:11.5px}
+.act dl div{display:flex;justify-content:space-between}
+.act dl dt{color:var(--muted)}.act dl dd{font-weight:600}
+.act .deadline{margin-top:12px;padding:8px 10px;border-radius:8px;font-size:11px;text-align:center;font-weight:600}
+.act.a-now .deadline{background:var(--red-bg);color:var(--red)}
+.act.a-week .deadline{background:var(--amber-bg);color:var(--amber)}
+
+/* ============ 明细表 ============ */
+.detail-card{padding:18px 20px 10px}
+.tools{display:flex;justify-content:space-between;gap:14px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:6px 14px;border:1px solid var(--line);border-radius:20px;background:#fff;font-size:12px;cursor:pointer;
+  color:var(--ink-soft);transition:all .2s;font-family:inherit;display:flex;align-items:center;gap:6px}
+.chip .cn{font-family:var(--num);font-size:10.5px;color:var(--muted)}
+.chip:hover{border-color:var(--gold-2);color:var(--ink)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip.on .cn{color:rgba(255,255,255,.65)}
+.search{position:relative}
+.search input{padding:7px 12px 7px 32px;border:1px solid var(--line);border-radius:8px;font-size:12px;width:200px;font-family:inherit;outline:none;transition:border .2s}
+.search input:focus{border-color:var(--gold-2)}
+.search svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.tbl-scroll{overflow-x:auto;margin:0 -20px;padding:0 20px}
+table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:1080px}
+thead th{position:sticky;top:0;text-align:left;padding:10px 10px;font-size:10.5px;letter-spacing:.1em;color:var(--muted);
+  font-weight:600;background:#fafbfd;border-bottom:1px solid var(--line);white-space:nowrap}
+thead th.sortable{cursor:pointer;user-select:none}
+thead th.sortable:hover{color:var(--ink)}
+thead th.r,tbody td.r{text-align:right}
+tbody td{padding:9px 10px;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+tbody tr{transition:background .15s}
+tbody tr:hover{background:#f7f9fc}
+td .code{font-family:var(--num);font-size:11.5px;color:var(--muted)}
+.pill{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.pill i{width:6px;height:6px;border-radius:50%;background:currentColor}
+.p-red{background:var(--red-bg);color:var(--red)}
+.p-amber{background:var(--amber-bg);color:var(--amber)}
+.p-teal{background:var(--teal-bg);color:var(--teal)}
+.p-gray{background:var(--gray-bg);color:var(--gray)}
+.mini-track{display:inline-block;width:54px;height:5px;background:var(--gray-bg);border-radius:3px;overflow:hidden;margin-right:8px;vertical-align:middle}
+.mini-fill{display:block;height:100%;border-radius:3px}
+.cell-qty{font-family:var(--num);font-weight:700;font-size:13px}
+.empty{text-align:center;color:var(--muted);font-size:12.5px;padding:34px 0}
+
+/* ============ 方法论 ============ */
+.method-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0}
+.mstep{padding:22px 24px;border-right:1px solid var(--line);position:relative}
+.mstep:last-child{border-right:0}
+.mstep .n{font-family:var(--num);font-size:11px;letter-spacing:.16em;color:var(--gold);font-weight:700}
+.mstep h4{font-size:13.5px;margin:7px 0 8px}
+.mstep p{font-size:11.5px;color:var(--ink-soft);line-height:1.65}
+.formula{margin-top:10px;background:#f7f9fc;border:1px solid var(--line-soft);border-radius:8px;padding:8px 10px;
+  font-family:"Consolas",monospace;font-size:10.5px;color:var(--ink-2);line-height:1.6;word-break:break-all}
+
+/* ============ 页脚 ============ */
+.footer{margin-top:44px;background:linear-gradient(160deg,#0a1c34,#10294a);color:rgba(255,255,255,.55)}
+.ft-inner{max-width:1240px;margin:0 auto;padding:26px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+.ft-l{display:flex;align-items:center;gap:10px;font-size:11px;letter-spacing:.2em}
+.ft-l .mark{width:24px;height:24px;border:1px solid rgba(199,168,98,.6);border-radius:6px;display:grid;place-items:center;color:var(--gold-2);font-size:11px;font-family:var(--num)}
+.ft-r{font-size:11px}
+.ft-r a{color:rgba(255,255,255,.75);text-decoration:none;border-bottom:1px solid rgba(199,168,98,.4)}
+.goldline{height:2px;background:linear-gradient(90deg,transparent,var(--gold-2) 30%,var(--gold-deep) 70%,transparent)}
+
+@media(max-width:1020px){
+  .kpi-grid,.action-grid{grid-template-columns:repeat(2,1fr)}
+  .ana-grid{grid-template-columns:1fr}
+  .method-grid{grid-template-columns:repeat(2,1fr)}
+  .mstep:nth-child(2){border-right:0}
+  .mstep:nth-child(-n+2){border-bottom:1px solid var(--line)}
+}
+@media(max-width:600px){
+  .mh-title h1{font-size:26px}
+  .kpi-grid,.action-grid,.method-grid{grid-template-columns:1fr}
+  .mstep{border-right:0;border-bottom:1px solid var(--line)}
+  .tools{flex-direction:column;align-items:stretch}
+  .search input{width:100%}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<!-- ==================== 报头 ==================== -->
+<header class="masthead">
+  <div class="mh-inner">
+    <div class="mh-top">
+      <div class="brand"><span class="mark">S</span>SCM INTELLIGENCE SUITE</div>
+      <div class="classify">内部资料 · 演示数据集</div>
+    </div>
+    <div class="mh-title">
+      <h1>智能补货建议报告</h1>
+      <div class="en">REPLENISHMENT ADVISORY</div>
+    </div>
+    <div class="mh-meta">
+      <div class="mi"><span class="k">报告日期</span><span class="v">2026-10-09</span></div>
+      <div class="mi"><span class="k">数据周期</span><span class="v">近 28<small>天</small></span></div>
+      <div class="mi"><span class="k">分析 SKU</span><span class="v">30<small>个</small></span></div>
+      <div class="mi"><span class="k">覆盖仓库</span><span class="v">3<small>座</small></span></div>
+      <div class="mi"><span class="k">在供供应商</span><span class="v">5<small>家</small></span></div>
+    </div>
+    <div class="verdict">
+      <span class="tag">执行摘要</span>
+      <p><b>4 个 SKU</b> 须在本周内启动补货流程，合计建议采购 <b>946 件</b>（按均价测算约 <b>¥47,300</b>）；其中 2 个 SKU 现货覆盖已短于供应商提前期，需当日下单。另有 <b>16 个 SKU</b> 触发滞销预警，建议同步启动清仓与停采评审。</p>
+    </div>
   </div>
-  <div class="section">
-    <h2 style="font-size:14px;margin-bottom:10px;">补货明细（按覆盖天数升序）</h2>
-    <table>
-      <thead><tr><th>SKU</th><th>名称</th><th>品类</th><th>仓库</th><th>日均销量</th><th>库存</th><th>在途</th><th>可用</th><th>覆盖天数</th><th>周转天数</th><th>建议补货量</th><th>紧急程度</th><th>供应商</th></tr></thead>
-      <tbody><tr>
-          <td>SP-003</td><td>智能手环</td><td>数码</td><td>华南仓</td>
-          <td>31.9</td><td>60</td><td>0</td><td>60</td>
-          <td>1.9天</td><td>2天</td>
-          <td style="text-align:right;font-weight:700;">387</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">立即补货</span></td>
-          <td>中芯微</td>
-        </tr>
-<tr>
-          <td>SP-011</td><td>机械键盘</td><td>数码</td><td>华东仓</td>
-          <td>16.0</td><td>50</td><td>0</td><td>50</td>
-          <td>3.1天</td><td>3天</td>
-          <td style="text-align:right;font-weight:700;">174</td>
-          <td><span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">本周补货</span></td>
-          <td>恒达电子</td>
-        </tr>
-<tr>
-          <td>SP-029</td><td>坚果混合装</td><td>食品</td><td>华北仓</td>
-          <td>20.2</td><td>90</td><td>0</td><td>90</td>
-          <td>4.5天</td><td>4天</td>
-          <td style="text-align:right;font-weight:700;">193</td>
-          <td><span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">本周补货</span></td>
-          <td>三只松</td>
-        </tr>
-<tr>
-          <td>SP-018</td><td>燕麦能量棒</td><td>食品</td><td>华北仓</td>
-          <td>23.7</td><td>140</td><td>0</td><td>140</td>
-          <td>5.9天</td><td>6天</td>
-          <td style="text-align:right;font-weight:700;">192</td>
-          <td><span style="background:#fef3c7;color:#d97706;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">本周补货</span></td>
-          <td>三只松</td>
-        </tr>
-<tr>
-          <td>SP-002</td><td>无线充电板</td><td>数码</td><td>华东仓</td>
-          <td>24.9</td><td>320</td><td>200</td><td>520</td>
-          <td>20.9天</td><td>13天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>恒达电子</td>
-        </tr>
-<tr>
-          <td>SP-008</td><td>坚果礼盒装</td><td>食品</td><td>华东仓</td>
-          <td>28.4</td><td>180</td><td>600</td><td>780</td>
-          <td>27.5天</td><td>6天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>三只松</td>
-        </tr>
-<tr>
-          <td>SP-019</td><td>迷你投影仪</td><td>数码</td><td>华东仓</td>
-          <td>6.3</td><td>90</td><td>150</td><td>240</td>
-          <td>38.1天</td><td>14天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>恒达电子</td>
-        </tr>
-<tr>
-          <td>SP-027</td><td>电动牙刷</td><td>数码</td><td>华东仓</td>
-          <td>10.3</td><td>160</td><td>300</td><td>460</td>
-          <td>44.7天</td><td>16天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>恒达电子</td>
-        </tr>
-<tr>
-          <td>SP-022</td><td>速溶咖啡</td><td>食品</td><td>华南仓</td>
-          <td>14.5</td><td>280</td><td>400</td><td>680</td>
-          <td>46.9天</td><td>19天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>三只松</td>
-        </tr>
-<tr>
-          <td>SP-014</td><td>蓝牙音箱</td><td>数码</td><td>华南仓</td>
-          <td>14.2</td><td>480</td><td>200</td><td>680</td>
-          <td>47.9天</td><td>34天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>中芯微</td>
-        </tr>
-<tr>
-          <td>SP-013</td><td>速食燕麦</td><td>食品</td><td>华北仓</td>
-          <td>19.6</td><td>260</td><td>800</td><td>1060</td>
-          <td>54.1天</td><td>13天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>三只松</td>
-        </tr>
-<tr>
-          <td>SP-020</td><td>加湿器</td><td>数码</td><td>华南仓</td>
-          <td>9.2</td><td>320</td><td>200</td><td>520</td>
-          <td>56.5天</td><td>35天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>中芯微</td>
-        </tr>
-<tr>
-          <td>SP-026</td><td>黑巧克力</td><td>食品</td><td>华北仓</td>
-          <td>11.9</td><td>210</td><td>500</td><td>710</td>
-          <td>59.7天</td><td>18天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>三只松</td>
-        </tr>
-<tr>
-          <td>SP-001</td><td>蓝牙耳机 Pro</td><td>数码</td><td>华东仓</td>
-          <td>37.0</td><td>1850</td><td>600</td><td>2450</td>
-          <td>66.2天</td><td>50天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>恒达电子</td>
-        </tr>
-<tr>
-          <td>SP-030</td><td>蓝牙鼠标</td><td>数码</td><td>华东仓</td>
-          <td>7.8</td><td>380</td><td>150</td><td>530</td>
-          <td>67.9天</td><td>49天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>中芯微</td>
-        </tr>
-<tr>
-          <td>SP-004</td><td>USB-C 数据线</td><td>数码</td><td>华北仓</td>
-          <td>75.9</td><td>4200</td><td>1000</td><td>5200</td>
-          <td>68.5天</td><td>55天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>中芯微</td>
-        </tr>
-<tr>
-          <td>SP-016</td><td>便携榨汁机</td><td>数码</td><td>华东仓</td>
-          <td>11.4</td><td>680</td><td>200</td><td>880</td>
-          <td>77.2天</td><td>60天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>恒达电子</td>
-        </tr>
-<tr>
-          <td>SP-024</td><td>手机支架</td><td>数码</td><td>华东仓</td>
-          <td>18.0</td><td>1200</td><td>400</td><td>1600</td>
-          <td>88.9天</td><td>67天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>中芯微</td>
-        </tr>
-<tr>
-          <td>SP-010</td><td>手冲滤纸</td><td>食品</td><td>华北仓</td>
-          <td>9.8</td><td>520</td><td>400</td><td>920</td>
-          <td>93.9天</td><td>53天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>三只松</td>
-        </tr>
-<tr>
-          <td>SP-007</td><td>不锈钢保温杯</td><td>家居</td><td>华北仓</td>
-          <td>10.7</td><td>340</td><td>800</td><td>1140</td>
-          <td>106.5天</td><td>32天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#d1fae5;color:#059669;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货</span></td>
-          <td>膳品</td>
-        </tr>
-<tr>
-          <td>SP-023</td><td>运动水壶</td><td>家居</td><td>华北仓</td>
-          <td>5.6</td><td>580</td><td>300</td><td>880</td>
-          <td>157.1天</td><td>104天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>膳品</td>
-        </tr>
-<tr>
-          <td>SP-028</td><td>护颈枕</td><td>家居</td><td>华南仓</td>
-          <td>4.6</td><td>720</td><td>200</td><td>920</td>
-          <td>200.0天</td><td>157天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>光禾家居</td>
-        </tr>
-<tr>
-          <td>SP-005</td><td>北欧风落地灯</td><td>家居</td><td>华东仓</td>
-          <td>3.9</td><td>1200</td><td>0</td><td>1200</td>
-          <td>307.7天</td><td>308天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>光禾家居</td>
-        </tr>
-<tr>
-          <td>SP-009</td><td>冻干咖啡</td><td>食品</td><td>华南仓</td>
-          <td>8.5</td><td>2800</td><td>0</td><td>2800</td>
-          <td>329.4天</td><td>329天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>三只松</td>
-        </tr>
-<tr>
-          <td>SP-021</td><td>香薰蜡烛</td><td>家居</td><td>华东仓</td>
-          <td>2.5</td><td>950</td><td>0</td><td>950</td>
-          <td>380.0天</td><td>380天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>光禾家居</td>
-        </tr>
-<tr>
-          <td>SP-006</td><td>记忆棉枕芯</td><td>家居</td><td>华南仓</td>
-          <td>6.1</td><td>2100</td><td>300</td><td>2400</td>
-          <td>393.4天</td><td>344天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>光禾家居</td>
-        </tr>
-<tr>
-          <td>SP-025</td><td>竹纤维毛巾</td><td>家居</td><td>华南仓</td>
-          <td>3.9</td><td>1600</td><td>0</td><td>1600</td>
-          <td>410.3天</td><td>410天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>光禾家居</td>
-        </tr>
-<tr>
-          <td>SP-012</td><td>桌面台灯</td><td>家居</td><td>华南仓</td>
-          <td>3.4</td><td>1500</td><td>0</td><td>1500</td>
-          <td>441.2天</td><td>441天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>光禾家居</td>
-        </tr>
-<tr>
-          <td>SP-015</td><td>收纳整理箱</td><td>家居</td><td>华东仓</td>
-          <td>4.6</td><td>2400</td><td>0</td><td>2400</td>
-          <td>521.7天</td><td>522天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>光禾家居</td>
-        </tr>
-<tr>
-          <td>SP-017</td><td>保温便当袋</td><td>家居</td><td>华南仓</td>
-          <td>3.1</td><td>1800</td><td>0</td><td>1800</td>
-          <td>580.6天</td><td>581天</td>
-          <td style="text-align:right;font-weight:700;">0</td>
-          <td><span style="background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;">暂缓补货（滞销）</span></td>
-          <td>光禾家居</td>
-        </tr>
-</tbody>
-    </table>
+</header>
+
+<main class="wrap">
+
+  <!-- ============ 01 行动概览 ============ -->
+  <section class="sec rise" style="animation-delay:.05s">
+    <div class="sec-head">
+      <span class="no">01</span><h2>行动概览</h2><span class="rule"></span><span class="note">KEY INDICATORS</span>
+    </div>
+    <div class="kpi-grid">
+      <div class="card kpi k-red">
+        <div class="lab">立即补货 <span class="en">CRITICAL</span></div>
+        <div class="val num">1</div>
+        <div class="sub">现货覆盖 <b>≤ 3 天</b></div>
+        <svg class="spark" width="70" height="24" viewBox="0 0 70 24"><polyline points="0,20 14,16 28,18 42,10 56,8 70,4" fill="none" stroke="#bd3b31" stroke-width="1.6"/></svg>
+      </div>
+      <div class="card kpi k-amber">
+        <div class="lab">本周补货 <span class="en">THIS WEEK</span></div>
+        <div class="val num">3</div>
+        <div class="sub">现货覆盖 <b>4 – 7 天</b></div>
+        <svg class="spark" width="70" height="24" viewBox="0 0 70 24"><polyline points="0,18 14,14 28,15 42,11 56,9 70,7" fill="none" stroke="#bd8424" stroke-width="1.6"/></svg>
+      </div>
+      <div class="card kpi k-teal">
+        <div class="lab">暂缓补货 <span class="en">ON HOLD</span></div>
+        <div class="val num">26</div>
+        <div class="sub">其中含滞销 <b>16 个</b>，健康库存 10 个</div>
+        <svg class="spark" width="70" height="24" viewBox="0 0 70 24"><polyline points="0,10 14,12 28,9 42,11 56,10 70,9" fill="none" stroke="#178a75" stroke-width="1.6"/></svg>
+      </div>
+      <div class="card kpi k-gold">
+        <div class="lab">建议补货总量 <span class="en">ORDER QTY</span></div>
+        <div class="val num">946</div>
+        <div class="sub">测算采购额约 <b>¥47,300</b></div>
+        <svg class="spark" width="70" height="24" viewBox="0 0 70 24"><polyline points="0,18 14,16 28,12 42,12 56,7 70,5" fill="none" stroke="#b08d4e" stroke-width="1.6"/></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 结构分析 ============ -->
+  <section class="sec rise" style="animation-delay:.12s">
+    <div class="sec-head">
+      <span class="no">02</span><h2>库存结构分析</h2><span class="rule"></span><span class="note">PORTFOLIO ANALYSIS</span>
+    </div>
+    <div class="ana-grid">
+
+      <div class="card ana-card">
+        <h3>紧急程度结构 <span>URGENCY MIX</span></h3>
+        <div class="donut-wrap">
+          <div class="donut">
+            <svg width="138" height="138" viewBox="0 0 138 138" id="donut"></svg>
+            <div class="dc"><b class="num">4</b><small>需行动 SKU</small></div>
+          </div>
+          <div class="legend" id="donut-lg"></div>
+        </div>
+      </div>
+
+      <div class="card ana-card">
+        <h3>覆盖天数分布 <span>DAYS OF COVER</span></h3>
+        <div class="hbars" id="cover-bars"></div>
+      </div>
+
+      <div class="card ana-card">
+        <h3>建议采购量 · 按供应商 <span>BY SUPPLIER</span></h3>
+        <div class="hbars" id="sup-bars"></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 03 行动计划 ============ -->
+  <section class="sec rise" style="animation-delay:.19s">
+    <div class="sec-head">
+      <span class="no">03</span><h2>本周补货行动计划</h2><span class="rule"></span><span class="note">ACTION ITEMS</span>
+    </div>
+    <div class="action-grid" id="actions"></div>
+  </section>
+
+  <!-- ============ 04 明细 ============ -->
+  <section class="sec rise" style="animation-delay:.26s">
+    <div class="sec-head">
+      <span class="no">04</span><h2>SKU 补货明细</h2><span class="rule"></span><span class="note">LINE ITEMS</span>
+    </div>
+    <div class="card detail-card">
+      <div class="tools">
+        <div class="chips" id="chips">
+          <button class="chip on" data-f="all">全部 <span class="cn">30</span></button>
+          <button class="chip" data-f="now">立即补货 <span class="cn">1</span></button>
+          <button class="chip" data-f="week">本周补货 <span class="cn">3</span></button>
+          <button class="chip" data-f="hold">健康暂缓 <span class="cn">10</span></button>
+          <button class="chip" data-f="dead">滞销停采 <span class="cn">16</span></button>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <div class="search">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            <input type="text" id="q" placeholder="搜索 SKU / 名称…">
+          </div>
+          <button class="chip" id="csv-btn" title="导出全部30个SKU">导出 CSV</button>
+        </div>
+      </div>
+      <div class="tbl-scroll">
+        <table>
+          <thead><tr>
+            <th class="sortable" data-k="sku">SKU</th><th class="sortable" data-k="name">名称</th><th>品类</th><th>仓库</th>
+            <th class="r sortable" data-k="avg">日均销量</th><th class="r">库存</th><th class="r">在途</th><th class="r">可用</th>
+            <th class="r sortable" data-k="cover">覆盖天数</th><th class="r">周转天数</th>
+            <th class="r sortable" data-k="qty">建议补货量</th><th>紧急程度</th><th>供应商</th>
+          </tr></thead>
+          <tbody id="tb"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 方法论 ============ -->
+  <section class="sec rise" style="animation-delay:.33s">
+    <div class="sec-head">
+      <span class="no">05</span><h2>计算方法论</h2><span class="rule"></span><span class="note">METHODOLOGY</span>
+    </div>
+    <div class="card">
+      <div class="method-grid">
+        <div class="mstep">
+          <div class="n">STEP 01</div><h4>需求预测</h4>
+          <p>采用近 4 周销量加权移动平均（WMA），越近周期权重越高，对趋势变化更敏感。</p>
+          <div class="formula">日均 = (0.1W1 + 0.2W2<br>+ 0.3W3 + 0.4W4) / 28</div>
+        </div>
+        <div class="mstep">
+          <div class="n">STEP 02</div><h4>库存覆盖</h4>
+          <p>可用库存含在途数量，据此计算现货可支撑销售的天数（Days of Cover）。</p>
+          <div class="formula">覆盖天数 = (库存 + 在途)<br>/ 日均销量</div>
+        </div>
+        <div class="mstep">
+          <div class="n">STEP 03</div><h4>补货量测算</h4>
+          <p>按 7 天安全库存 + 7 天补货周期的目标库存水位，扣减可用库存得出建议量。</p>
+          <div class="formula">建议量 = max(0, 14 × 日均<br>− 库存 − 在途)</div>
+        </div>
+        <div class="mstep">
+          <div class="n">STEP 04</div><h4>分级与滞销</h4>
+          <p>覆盖 ≤3 天立即补货、≤7 天本周补货；周转 &gt;45 天判定滞销，建议量清零并转清仓。</p>
+          <div class="formula">阈值：3d / 7d / 45d</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="goldline"></div>
+<footer class="footer">
+  <div class="ft-inner">
+    <div class="ft-l"><span class="mark">S</span>SCM INTELLIGENCE SUITE · REPLENISHMENT ADVISORY</div>
+    <div class="ft-r">演示数据集 · <a href="https://github.com/46bzvs7m64-gif/replenishment-advisor">github.com/46bzvs7m64-gif/replenishment-advisor</a> · 生成于 2026-10-09</div>
   </div>
-  <div class="footer">智能补货建议报告 · 演示数据集 · github.com/46bzvs7m64-gif/replenishment-advisor</div>
-</div></body></html>
+</footer>
+
+<script>
+// ============ 数据（30 SKU：sku,名称,品类,仓库,日均,库存,在途,覆盖,周转,建议量,级别,供应商,提前期）============
+const RAW = [
+["SP-003","智能手环","数码","华南仓",31.9,60,0,1.9,2,387,"now","中芯微",7],
+["SP-011","机械键盘","数码","华东仓",16.0,50,0,3.1,3,174,"week","恒达电子",7],
+["SP-029","坚果混合装","食品","华北仓",20.2,90,0,4.5,4,193,"week","三只松",5],
+["SP-018","燕麦能量棒","食品","华北仓",23.7,140,0,5.9,6,192,"week","三只松",3],
+["SP-002","无线充电板","数码","华东仓",24.9,320,200,20.9,13,0,"hold","恒达电子",5],
+["SP-008","坚果礼盒装","食品","华东仓",28.4,180,600,27.5,6,0,"hold","三只松",5],
+["SP-019","迷你投影仪","数码","华东仓",6.3,90,150,38.1,14,0,"hold","恒达电子",10],
+["SP-027","电动牙刷","数码","华东仓",10.3,160,300,44.7,16,0,"hold","恒达电子",7],
+["SP-022","速溶咖啡","食品","华南仓",14.5,280,400,46.9,19,0,"hold","三只松",5],
+["SP-014","蓝牙音箱","数码","华南仓",14.2,480,200,47.9,34,0,"hold","中芯微",7],
+["SP-013","速食燕麦","食品","华北仓",19.6,260,800,54.1,13,0,"hold","三只松",5],
+["SP-020","加湿器","数码","华南仓",9.2,320,200,56.5,35,0,"hold","中芯微",7],
+["SP-026","黑巧克力","食品","华北仓",11.9,210,500,59.7,18,0,"hold","三只松",5],
+["SP-001","蓝牙耳机 Pro","数码","华东仓",37.0,1850,600,66.2,50,0,"dead","恒达电子",7],
+["SP-030","蓝牙鼠标","数码","华东仓",7.8,380,150,67.9,49,0,"dead","中芯微",5],
+["SP-004","USB-C 数据线","数码","华北仓",75.9,4200,1000,68.5,55,0,"dead","中芯微",3],
+["SP-016","便携榨汁机","数码","华东仓",11.4,680,200,77.2,60,0,"dead","恒达电子",7],
+["SP-024","手机支架","数码","华东仓",18.0,1200,400,88.9,67,0,"dead","中芯微",3],
+["SP-010","手冲滤纸","食品","华北仓",9.8,520,400,93.9,53,0,"dead","三只松",5],
+["SP-007","不锈钢保温杯","家居","华北仓",10.7,340,800,106.5,32,0,"hold","膳品",5],
+["SP-023","运动水壶","家居","华北仓",5.6,580,300,157.1,104,0,"dead","膳品",5],
+["SP-028","护颈枕","家居","华南仓",4.6,720,200,200.0,157,0,"dead","光禾家居",7],
+["SP-005","北欧风落地灯","家居","华东仓",3.9,1200,0,307.7,308,0,"dead","光禾家居",10],
+["SP-009","冻干咖啡","食品","华南仓",8.5,2800,0,329.4,329,0,"dead","三只松",7],
+["SP-021","香薰蜡烛","家居","华东仓",2.5,950,0,380.0,380,0,"dead","光禾家居",10],
+["SP-006","记忆棉枕芯","家居","华南仓",6.1,2100,300,393.4,344,0,"dead","光禾家居",7],
+["SP-025","竹纤维毛巾","家居","华南仓",3.9,1600,0,410.3,410,0,"dead","光禾家居",7],
+["SP-012","桌面台灯","家居","华南仓",3.4,1500,0,441.2,441,0,"dead","光禾家居",10],
+["SP-015","收纳整理箱","家居","华东仓",4.6,2400,0,521.7,522,0,"dead","光禾家居",10],
+["SP-017","保温便当袋","家居","华南仓",3.1,1800,0,580.6,581,0,"dead","光禾家居",10]
+];
+const DATA = RAW.map(r=>({sku:r[0],name:r[1],cat:r[2],wh:r[3],avg:r[4],stock:r[5],transit:r[6],
+  avail:r[5]+r[6],cover:r[7],turn:r[8],qty:r[9],u:r[10],sup:r[11],lt:r[12]}));
+
+const C = {now:"#bd3b31",week:"#bd8424",hold:"#178a75",dead:"#8590a2"};
+const LABEL = {now:"立即补货",week:"本周补货",hold:"健康暂缓",dead:"滞销停采"};
+
+// ============ 环形图 ============
+(function(){
+  const order=["now","week","hold","dead"];
+  const counts={};order.forEach(k=>counts[k]=DATA.filter(d=>d.u===k).length);
+  const total=DATA.length, R=56, CIRC=2*Math.PI*R, sw=17;
+  let offset=0, segs="";
+  order.forEach(k=>{
+    const frac=counts[k]/total;
+    segs+=`<circle cx="69" cy="69" r="${R}" fill="none" stroke="${C[k]}" stroke-width="${sw}"
+      stroke-dasharray="${(frac*CIRC).toFixed(2)} ${(CIRC-frac*CIRC).toFixed(2)}" stroke-dashoffset="${(-offset*CIRC).toFixed(2)}"/>`;
+    offset+=frac;
+  });
+  document.getElementById("donut").innerHTML=
+    `<circle cx="69" cy="69" r="${R}" fill="none" stroke="#f0f2f7" stroke-width="${sw}"/>${segs}`;
+  document.getElementById("donut-lg").innerHTML=order.map(k=>
+    `<div class="lg"><i style="background:${C[k]}"></i>${LABEL[k]}<span class="p">${(counts[k]/total*100).toFixed(0)}%</span><span class="n">${counts[k]}</span></div>`
+  ).join("");
+})();
+
+// ============ 覆盖天数分布 ============
+(function(){
+  const buckets=[["≤ 7 天",d=>d.cover<=7,C.now],["8 – 30 天",d=>d.cover>7&&d.cover<=30,C.week],
+    ["31 – 90 天",d=>d.cover>30&&d.cover<=90,C.hold],["> 90 天",d=>d.cover>90,C.dead]];
+  const rows=buckets.map(([t,f,c])=>({t,c,n:DATA.filter(f).length}));
+  const max=Math.max(...rows.map(r=>r.n));
+  document.getElementById("cover-bars").innerHTML=rows.map(r=>
+    `<div class="hb"><div class="top"><span class="t">${r.t}</span><span class="c"><b>${r.n}</b> 个 · ${(r.n/30*100).toFixed(0)}%</span></div>
+    <div class="track"><div class="fill" style="width:${(r.n/max*100)}%;background:${r.c}"></div></div></div>`).join("");
+})();
+
+// ============ 供应商采购量 ============
+(function(){
+  const m={};
+  DATA.filter(d=>d.qty>0).forEach(d=>m[d.sup]=(m[d.sup]||0)+d.qty);
+  const rows=Object.entries(m).map(([s,q])=>({s,q,v:q*50})).sort((a,b)=>b.q-a.q);
+  const max=Math.max(...rows.map(r=>r.q));
+  document.getElementById("sup-bars").innerHTML=rows.map(r=>
+    `<div class="hb"><div class="top"><span class="t">${r.s}</span><span class="c"><b>${r.q}</b> 件 · ¥${r.v.toLocaleString()}</span></div>
+    <div class="track"><div class="fill" style="width:${(r.q/max*100)}%;background:linear-gradient(90deg,#c7a862,#8f6f36)"></div></div></div>`).join("");
+})();
+
+// ============ 行动计划 ============
+(function(){
+  const today=new Date(2026,9,9);
+  const fmt=d=>`${d.getMonth()+1}月${d.getDate()}日`;
+  document.getElementById("actions").innerHTML=DATA.filter(d=>d.qty>0).map(d=>{
+    const slack=d.cover-d.lt;
+    let dl;
+    if(slack<=0) dl=`已滞后 ${Math.round(-slack)} 天 · 当日必须下单`;
+    else if(slack<=2) dl=`${fmt(new Date(today.getTime()+slack*864e5))} 前下单`;
+    else dl=`本周内下单（余量 ${Math.round(slack)} 天）`;
+    return `<div class="card act ${d.u==='now'?'a-now':'a-week'}">
+      <div class="rib"><span class="dot"></span>${d.u==='now'?'立即补货 · CRITICAL':'本周补货 · THIS WEEK'}</div>
+      <div class="body">
+        <div class="sku">${d.sku}</div><div class="nm">${d.name}</div>
+        <div class="qty">${d.qty}<small>件</small></div>
+        <dl>
+          <div><dt>供应商</dt><dd>${d.sup}</dd></div>
+          <div><dt>采购提前期</dt><dd>${d.lt} 天</dd></div>
+          <div><dt>现货 / 覆盖</dt><dd>${d.stock} 件 · ${d.cover} 天</dd></div>
+        </dl>
+        <div class="deadline">${dl}</div>
+      </div>
+    </div>`;
+  }).join("");
+})();
+
+// ============ 明细表 ============
+let filter="all", query="", sortK="cover", sortDir=1;
+const UMAP={now:["p-red","立即补货"],week:["p-amber","本周补货"],
+  hold:["p-teal","暂缓补货"],dead:["p-gray","暂缓补货（滞销）"]};
+
+function render(){
+  let rows=DATA.filter(d=>(filter==="all"||d.u===filter) &&
+    (!query||d.name.toLowerCase().includes(query)||d.sku.toLowerCase().includes(query)));
+  rows.sort((a,b)=>{
+    const x=a[sortK],y=b[sortK];
+    return (typeof x==="number"?x-y:String(x).localeCompare(String(y),"zh"))*sortDir;
+  });
+  const tb=document.getElementById("tb");
+  if(!rows.length){tb.innerHTML='<tr><td colspan="13" class="empty">没有符合条件的 SKU</td></tr>';return}
+  tb.innerHTML=rows.map(d=>{
+    const [pc,pl]=UMAP[d.u];
+    const covW=Math.min(100,d.cover/90*100);
+    const covC=d.u==="now"?C.now:d.u==="week"?C.week:d.u==="dead"?C.dead:C.hold;
+    return `<tr>
+      <td><span class="code">${d.sku}</span></td><td>${d.name}</td><td>${d.cat}</td><td>${d.wh}</td>
+      <td class="r num">${d.avg.toFixed(1)}</td><td class="r num">${d.stock}</td><td class="r num">${d.transit}</td>
+      <td class="r num">${d.avail}</td>
+      <td class="r"><span class="mini-track"><span class="mini-fill" style="width:${covW}%;background:${covC}"></span></span><span class="num">${d.cover}</span></td>
+      <td class="r num">${d.turn}</td>
+      <td class="r cell-qty">${d.qty||'<span style="color:#b7c0cf">—</span>'}</td>
+      <td><span class="pill ${pc}"><i></i>${pl}</span></td>
+      <td>${d.sup}</td></tr>`;
+  }).join("");
+}
+document.getElementById("chips").addEventListener("click",e=>{
+  const b=e.target.closest(".chip");if(!b)return;
+  document.querySelectorAll("#chips .chip").forEach(c=>c.classList.remove("on"));
+  b.classList.add("on");filter=b.dataset.f;render();
+});
+document.getElementById("q").addEventListener("input",e=>{query=e.target.value.trim().toLowerCase();render()});
+document.querySelectorAll("th.sortable").forEach(th=>th.addEventListener("click",()=>{
+  const k=th.dataset.k;if(sortK===k)sortDir*=-1;else{sortK=k;sortDir=1}
+  document.querySelectorAll("th.sortable").forEach(t=>t.textContent=t.textContent.replace(/[ ▲▼]+$/,""));
+  th.textContent+=(sortDir===1?" ▲":" ▼");render();
+}));
+document.getElementById("csv-btn").addEventListener("click",()=>{
+  const H=["SKU","名称","品类","仓库","日均销量","库存","在途","可用","覆盖天数","周转天数","建议补货量","紧急程度","供应商"];
+  const lines=[H.join(",")].concat(DATA.map(d=>[d.sku,d.name,d.cat,d.wh,d.avg,d.stock,d.transit,d.avail,
+    d.cover,d.turn,d.qty,UMAP[d.u][1],d.sup].join(",")));
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob(["\ufeff"+lines.join("\n")],{type:"text/csv"}));
+  a.download="智能补货建议明细.csv";a.click();
+});
+render();
+</script>
+</body>
+</html>
